@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Gradient Extractor</title>
+    <style>
+        :root {
+            --black: #000000;
+            --dark-gray: #333333;
+            --medium-gray: #666666;
+            --light-gray: #999999;
+            --lighter-gray: #cccccc;
+            --lightest-gray: #e6e6e6;
+            --white: #ffffff;
+            --border: 1px solid #e0e0e0;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease-in-out;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            color: var(--dark-gray);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 400;
+            color: var(--black);
+            letter-spacing: 0.5px;
+        }
+        
+        .upload-section {
+            background: var(--lightest-gray);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: var(--border);
+            transition: var(--transition);
+            text-align: center;
+        }
+        
+        .upload-section:hover {
+            border-color: var(--light-gray);
+            background: var(--white);
+        }
+        
+        .file-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            border: var(--border);
+            border-radius: 4px;
+            background: var(--white);
+            color: var(--dark-gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .file-input:hover {
+            border-color: var(--medium-gray);
+        }
+        
+        .samples-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .samples-input {
+            width: 80px;
+            padding: 8px;
+            font-size: 14px;
+            border: var(--border);
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .preview-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .image-preview, .gradient-preview {
+            background: var(--white);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            display: block;
+            margin: 0 auto;
+            border: var(--border);
+        }
+        
+        .gradient-display {
+            height: 100px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .color-info {
+            background: var(--white);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .color-range {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: var(--lightest-gray);
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        
+        .color-range:hover {
+            background: var(--lighter-gray);
+        }
+        
+        .color-sample {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: var(--border);
+            box-shadow: var(--shadow);
+            flex-shrink: 0;
+        }
+        
+        .glsl-section {
+            background: var(--white);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+        
+        .glsl-vectors {
+            background: var(--lightest-gray);
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid var(--medium-gray);
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+        
+        .btn {
+            background: var(--medium-gray);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn:hover {
+            background: var(--dark-gray);
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: var(--lighter-gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .download-section {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .download-btn {
+            padding: 12px 30px;
+            font-size: 15px;
+            border-radius: 4px;
+        }
+        
+        .processing {
+            text-align: center;
+            padding: 15px;
+            font-size: 16px;
+            color: var(--medium-gray);
+            display: none;
+        }
+        
+        h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: var(--black);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .reset-btn {
+            background: #cac7c6;
+        }
+        
+        .reset-btn:hover {
+            background: #e0dedd;
+        }
+        
+        @media (max-width: 768px) {
+            .preview-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        .clcanvas{
+            width: 300px;
+            height: 300px;
+        }
+
+        .inputsimple{
+            position: relative;
+            border-radius: 40%;
+            width: 60px;
+            height:60px;
+            background-color: #505050;
+            border: 1.2px solid #363636;
+            z-index: 400;
+            color: #ffffff;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+        .flxc{
+            color: #575757;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>Color Gradient Extractor</h1>
+        <p class="flxc">Take the image of your favorite movie or game scene and match its render with that scene. Generate an image to correct the color of renders, be it Godot, Unreal Engine or Unity, or any  engine.</p>
+        
+        <div class="upload-section">
+            <div class="samples-section">
+                <label for="imageInput" class="inputsimple">Open Image</label> 
+                <input type="file" id="imageInput" class="file-input" style="display: none;" accept="image/*">
+                <button id="resetBtn" class="btn reset-btn" disabled>
+                    <i> </i>Reset Process
+                </button>
+                <label for="samplesInput"><strong>Number of samples:</strong></label>
+                <input type="number" id="samplesInput" class="samples-input" min="3" max="20" value="16">
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <div class="image-preview">
+                <h3>Original Image</h3>
+                <div id="originalImage"></div>
+            </div>
+            
+            <div class="gradient-preview">
+                <h3>Generated Gradient</h3>
+                <canvas id="gradientCanvas" width="2048" height="2048"  class="clcanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="color-info">
+            <h3>Representative Colors by Range</h3>
+            <div id="colorRanges"></div>
+        </div>
+        
+        <div class="glsl-section">
+            <h3>GLSL Vectors</h3>
+            <div class="glsl-vectors">
+                <pre id="glslVectors">Load an image to generate GLSL vectors</pre>
+            </div>
+            <div class="button-group">
+                <button id="copyBtn" class="btn" disabled>
+                    <i> </i>Copy GLSL Vectors
+                </button>
+                 
+            </div>
+        </div>
+        
+        <div class="download-section">
+            <button id="downloadBtn" class="btn download-btn" disabled>
+                <i> </i>Download Gradient (2048x100px)
+            </button>
+        </div>
+        
+        <div id="processing" class="processing">
+            Processing image...
+        </div>
+    </div>
+
+    <script>
+        class ColorGradientExtractor {
+            constructor() {
+                this.imageInput = document.getElementById('imageInput');
+                this.samplesInput = document.getElementById('samplesInput');
+                this.originalImage = document.getElementById('originalImage');
+                this.gradientDisplay = document.getElementById('gradientDisplay');
+                this.gradientCanvas = document.getElementById('gradientCanvas');
+                this.colorRanges = document.getElementById('colorRanges');
+                this.glslVectors = document.getElementById('glslVectors');
+                this.downloadBtn = document.getElementById('downloadBtn');
+                this.copyBtn = document.getElementById('copyBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.processing = document.getElementById('processing');
+                this.arraymulti=[];
+                this.gradientColors = [];
+                this.setupEventListeners();
+                this.canvasresise=document.createElement("canvas");
+            }
+            
+            setupEventListeners() {
+                this.imageInput.addEventListener('change', (e) => this.handleImageUpload(e));
+                this.samplesInput.addEventListener('change', () => this.reprocessIfImageLoaded());
+                this.downloadBtn.addEventListener('click', () => this.downloadGradient());
+                this.copyBtn.addEventListener('click', () => this.copyGLSLVectors());
+                this.resetBtn.addEventListener('click', () => this.resetProcess());
+            }
+            
+            resetProcess() {
+                if (this.currentImage) {
+                    this.showProcessing(true);
+                    this.processImage(this.currentImage);
+                }
+            }
+            
+            reprocessIfImageLoaded() {
+                if (this.currentImage) {
+                    this.processImage(this.currentImage);
+                }
+            }
+            
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                this.showProcessing(true);
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.currentImage = img;
+                        this.displayOriginalImage(img);
+                        this.processImage(img);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            displayOriginalImage(img) {
+                this.originalImage.innerHTML = '';
+                const imgElement = img.cloneNode();
+                imgElement.style.maxWidth = '100%';
+                imgElement.style.maxHeight = '300px';
+                this.originalImage.appendChild(imgElement);
+            }
+            
+            recalcularbrillo=(imageData,imageData2)=> {
+                let data = imageData.data;
+                let data2 = imageData2.data;
+                var rgba = {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                };
+                let sat=parseFloat(prompt("The negative value increases color, the positive value increases gray sat",0.2));
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    rgba.r = data[i] / 255;
+                    rgba.g = data[i + 1] / 255;
+                    rgba.b = data[i + 2] / 255;
+                    let ab=data2[i]/255.0;
+                    rgba.r= rgba.r* ab;
+                    rgba.g= rgba.g* ab;   
+                    rgba.b= rgba.b*ab;  
+                    
+                 var maxx = Math.max(rgba.r,  rgba.g, rgba.b);
+
+                  var minpx = Math.min(rgba.r,  rgba.g, rgba.b);
+
+                  let dv=minpx/(maxx+0.00001);
+                  let maxx2=(data2[i]/255.0);
+
+                  let ab1=maxx2*1.3+0.2;
+
+                  if(ab1>1.0){
+                    ab1=1.0;
+                  }
+
+                  let s=maxx2*ab1+sat;
+
+                 rgba= this.saturationGio(rgba,s);
+
+                    data[i] = rgba.r * 255;
+                    data[i + 1] = rgba.g * 255;
+                    data[i + 2] = rgba.b * 255;
+                }
+                return imageData;
+            }
+            
+            imagenresise=(canvas=this.canvasresise,img,resolucion=2048)=>{
+                canvas.width = resolucion;
+                canvas.height =resolucion;
+                canvas.getContext("2d").drawImage(img,0,0,resolucion,resolucion);
+                return canvas;
+            }
+            
+            crearGradienteGrises=(canvasz=this.canvasresise) =>{
+                var canvas=document.createElement("canvas");
+                var ctx = canvas.getContext('2d');
+                const width = 2048;
+                const height = 2048;
+                
+                canvas.width = width;
+                canvas.height = height;
+                canvas.style.width = '512px';
+                canvas.style.height = '512px';
+                
+                function createGradient() {
+                    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+                    
+                    for (let i = 0; i <= 255; i++) {
+                        const stop = i / 255;
+                        const colorValue = Math.floor(i);
+                        gradient.addColorStop(stop, `rgb(${colorValue}, ${colorValue}, ${colorValue})`);
+                    }
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, width, height);
+                }
+                
+                createGradient();
+                return canvas;
+            }
+            
+            saturationGio=(tex_color, ec5)=> {
+                function valorLim(x) {
+                  if (x > 1.0) {
+                    x = 1.0;
+                  }
+                  if (x < 0.0) {
+                    x = 0.0;
+                  }
+                  return x;
+                }
+                var maxx = Math.max(tex_color.r, Math.max(tex_color.g, tex_color.b));
+                if(ec5>1.0){ec5=1.0;}
+                 if(ec5<-1.0){ec5=-1.0;}
+                var adjust = ec5;
+
+                if (tex_color.r !== maxx) {
+                  tex_color.r += (maxx - tex_color.r) * adjust;
+                }
+
+                if (tex_color.g !== maxx) {
+                  tex_color.g += (maxx - tex_color.g) * adjust;
+                }
+
+                if (tex_color.b !== maxx) {
+                  tex_color.b += (maxx - tex_color.b) * adjust;
+                }
+                tex_color.r = valorLim(tex_color.r);
+                tex_color.g = valorLim(tex_color.g);
+                tex_color.b = valorLim(tex_color.b);
+
+                return tex_color;
+            }
+            
+            processImage=(img)=> {
+                this.arraymulti =[];
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                canvas=this.imagenresise(canvas,img);
+                
+                ctx.drawImage(img, 0, 0);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let data =imageData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    this.arraymulti[i] =Math.max(data[i],data[i+1],data[i+2])/255.0;                   
+                }
+                
+                const pixels = imageData.data;
+                const sampleCount = parseInt(this.samplesInput.value);
+                
+                const colorRanges = this.analyzeColorRanges(pixels, sampleCount);
+                this.gradientColors = this.extractRepresentativeColors(colorRanges, sampleCount);
+                
+                this.displayColorInfo(this.gradientColors);
+                this.generateGLSLVectors(this.gradientColors);
+                this.generateGradient();
+                this.showProcessing(false);
+                this.downloadBtn.disabled = false;
+                this.copyBtn.disabled = false;
+                this.resetBtn.disabled = false;
+
+                let imagendata2 = this.gradientCanvas.getContext("2d").getImageData(0, 0, this.gradientCanvas.width, this.gradientCanvas.height);
+                var canvascolorgris=this.crearGradienteGrises();
+                imagendata2 = this.recalcularbrillo(imagendata2,canvascolorgris.getContext("2d").getImageData(0, 0, canvascolorgris.width, canvascolorgris.height));
+                this.gradientCanvas.getContext("2d").putImageData(imagendata2,0,0);  
+            }
+            
+            analyzeColorRanges(pixels, sampleCount) {
+                const ranges = {};
+                const step = 1.0 / sampleCount;
+                
+                for (let i = 0; i < sampleCount; i++) {
+                    const start = i * step;
+                    const end = (i + 1) * step;
+                    const key = `${start.toFixed(2)}-${end.toFixed(2)}`;
+                    ranges[key] = {};
+                }
+                
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i];
+                    const g = pixels[i + 1];
+                    const b = pixels[i + 2];
+                    
+                    const maxValue = Math.max(r, g, b);
+                    const normalizedMax = maxValue / 255;
+                    
+                    const rangeIndex = Math.min(Math.floor(normalizedMax * sampleCount), sampleCount - 1);
+                    const start = rangeIndex * step;
+                    const end = (rangeIndex + 1) * step;
+                    const rangeKey = `${start.toFixed(2)}-${end.toFixed(2)}`;
+                    
+                    const colorKey = `${r},${g},${b}`;
+                    ranges[rangeKey][colorKey] = (ranges[rangeKey][colorKey] || 0) + 1;
+                }
+                
+                return ranges;
+            }
+            
+            extractRepresentativeColors(ranges, sampleCount) {
+                const colors = [];
+                const step = 1.0 / sampleCount;
+                
+                for (let i = 0; i < sampleCount; i++) {
+                    const start = i * step;
+                    const end = (i + 1) * step;
+                    const rangeKey = `${start.toFixed(2)}-${end.toFixed(2)}`;
+                    const colorCounts = ranges[rangeKey];
+                    
+                    if (Object.keys(colorCounts).length === 0) {
+                        colors.push({ r: 128, g: 128, b: 128, count: 0, range: rangeKey });
+                        continue;
+                    }
+                    
+                    let mostFrequentColor = null;
+                    let maxCount = 0;
+                    
+                    for (const [colorKey, count] of Object.entries(colorCounts)) {
+                        if (count > maxCount) {
+                            maxCount = count;
+                            const [r, g, b] = colorKey.split(',').map(Number);
+                            mostFrequentColor = { r, g, b, count, range: rangeKey };
+                        }
+                    }
+                    
+                    colors.push(mostFrequentColor);
+                }
+                
+                return colors;
+            }
+            
+            displayColorInfo(colors) {
+                this.colorRanges.innerHTML = '';
+                
+                colors.forEach(color => {
+                    const div = document.createElement('div');
+                    div.className = 'color-range';
+                    
+                    const colorSample = document.createElement('div');
+                    colorSample.className = 'color-sample';
+                    colorSample.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                    
+                    const info = document.createElement('div');
+                    info.innerHTML = `
+                        <strong>Range ${color.range}</strong><br>
+                        RGB: (${color.r}, ${color.g}, ${color.b})<br>
+                        Frequency: ${color.count} pixels
+                    `;
+                    
+                    div.appendChild(colorSample);
+                    div.appendChild(info);
+                    this.colorRanges.appendChild(div);
+                });
+            }
+            
+            generateGLSLVectors(colors) {
+                let glslCode = 'vec3 colorbMezcla1 = vec3(1.0, 1.0, 1.0);\n';
+                
+                colors.forEach((color, index) => {
+                    const normalizedR = (color.r / 255).toFixed(3);
+                    const normalizedG = (color.g / 255).toFixed(3);
+                    const normalizedB = (color.b / 255).toFixed(3);
+                    
+                    const vectorName = this.getVectorName(index, colors.length);
+                    glslCode += `vec3 ${vectorName} = vec3(${normalizedR}, ${normalizedG}, ${normalizedB});\n`;
+                });
+                
+                this.glslVectors.textContent = glslCode;
+            }
+            
+            getVectorName(index, totalColors) {
+                const baseNames = ['01', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22', '24', '26', '28', '30', '32', '34', '36', '38'];
+                if (index < baseNames.length) {
+                    return `colorbMezcla${baseNames[index]}`;
+                }
+                return `colorbMezcla${String(index + 1).padStart(2, '0')}`;
+            }
+            
+            generateGradient = () => {
+                var canvas = this.gradientCanvas;
+                canvas.width = 2048;
+                canvas.height = 2048;
+                
+                var ctx = canvas.getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 2048, 0);
+                
+                this.gradientColors.forEach((color, index) => {
+                    const stop = index / (this.gradientColors.length - 1);
+                    gradient.addColorStop(stop, `rgb(${color.r}, ${color.g}, ${color.b})`);
+                });
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 2048, 2048);
+                
+                const dataURL = canvas.toDataURL();
+                if(this.gradientDisplay) {
+                    this.gradientDisplay.style.backgroundImage = `url(${dataURL})`;
+                    this.gradientDisplay.style.backgroundSize = 'cover';
+                }
+            }
+            
+            copyGLSLVectors() {
+                const text = this.glslVectors.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = this.copyBtn.innerHTML;
+                    this.copyBtn.innerHTML = '<i></i>Copied!';
+                    
+                    setTimeout(() => {
+                        this.copyBtn.innerHTML = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    alert('Error copying to clipboard');
+                });
+            }
+            
+            downloadGradient() {
+                const link = document.createElement('a');
+                link.download = 'color-gradient-2048x100.png';
+                link.href = this.gradientCanvas.toDataURL();
+                link.click();
+            }
+            
+            showProcessing(show) {
+                this.processing.style.display = show ? 'block' : 'none';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            new ColorGradientExtractor();
+        });
+    </script>
+</body>
+</html>
