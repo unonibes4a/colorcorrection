@@ -570,10 +570,82 @@
         }
         return rgba;
       }
-            
-            recalcularbrillo=(imageData,imageData2)=> {
+
+      colorepetido=(rgba,rgba2)=>{
+        rgba2.r =rgba2.r +rgba.r ;
+        rgba2.g =rgba2.g+rgba.g ;
+        rgba2.b =rgba2.b +rgba.b ;
+        return rgba2  ;
+      }
+
+      calculargradientegio=(imageData,imageData2)=> {
                 let data = imageData.data;
                 let data2 = this.imagendatagrisinicial.data;
+                var rgba = {r: 0, g: 0, b: 0, };
+                var rgba1 = {r: 0, g: 0, b: 0, };
+                var rgba2 = {r: 0, g: 0, b: 0, };
+                var rgba3 = {r: 0, g: 0, b: 0, };
+                var rgba4 = {r: 0, g: 0, b: 0, };
+                var rgba5 = {r: 0, g: 0, b: 0, };
+                var rgba6 = {r: 0, g: 0, b: 0, };
+                var rgba7 = {r: 0, g: 0, b: 0, };
+                var rgba8 = {r: 0, g: 0, b: 0, };
+                var rgba9 = {r: 0, g: 0, b: 0, };
+                var rgba10 = {r: 0, g: 0, b: 0, };
+                var rgba11 = {r: 0, g: 0, b: 0, };
+                var rgba12 = {r: 0, g: 0, b: 0, };
+                var rgba13 = {r: 0, g: 0, b: 0, };
+                var rgba14 = {r: 0, g: 0, b: 0, };
+                var rgba15 = {r: 0, g: 0, b: 0, };
+                var rgba16 = {r: 0, g: 0, b: 0, };
+                  var rgba16 = {r: 0, g: 0, b: 0, };
+                let sat=parseFloat(prompt("The negative value increases color, the positive value increases gray sat",0.2));
+
+                var maxpxcalcualdo=0;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    rgba.r = data[i] / 255;
+                    rgba.g = data[i + 1] / 255;
+                    rgba.b = data[i + 2] / 255;
+
+                    var sum=0.06;
+
+                  maxpxcalcualdo = Math.max(rgba.r,  rgba.g, rgba.b);
+                  if(maxpxcalcualdo<sum*1){colorepetido(rgba,rgba1);}
+                  if(maxpxcalcualdo>sum*1 &&maxpxcalcualdo<sum*2){colorepetido(rgba,rgba2);}
+                  if(maxpxcalcualdo>sum*2 &&maxpxcalcualdo<sum*3){colorepetido(rgba,rgba3);}
+                  if(maxpxcalcualdo>sum*3 &&maxpxcalcualdo<sum*4){colorepetido(rgba,rgba4);}
+                  if(maxpxcalcualdo>sum*4 &&maxpxcalcualdo<sum*5){colorepetido(rgba,rgba5);}
+                  if(maxpxcalcualdo>sum*5 &&maxpxcalcualdo<sum*6){colorepetido(rgba,rgba6);}
+
+                  if(maxpxcalcualdo>sum*6 &&maxpxcalcualdo<sum*7){colorepetido(rgba,rgba7);}
+                  if(maxpxcalcualdo>sum*7 &&maxpxcalcualdo<sum*8){colorepetido(rgba,rgba8);}
+                  if(maxpxcalcualdo>sum*8 &&maxpxcalcualdo<sum*9){colorepetido(rgba,rgba9);}
+                  if(maxpxcalcualdo>sum*9 &&maxpxcalcualdo<sum*10){colorepetido(rgba,rgba10);}
+                 
+                  
+                  
+                  if(maxpxcalcualdo>sum*10 &&maxpxcalcualdo<sum*11){colorepetido(rgba,rgba11);}
+                  if(maxpxcalcualdo>sum*11 &&maxpxcalcualdo<sum*12){colorepetido(rgba,rgba12);}
+                  if(maxpxcalcualdo>sum*12 &&maxpxcalcualdo<sum*13){colorepetido(rgba,rgba13);}
+                  if(maxpxcalcualdo>sum*13 &&maxpxcalcualdo<sum*13){colorepetido(rgba,rgba14);}
+
+                  if(maxpxcalcualdo>sum*14 &&maxpxcalcualdo<sum*15){colorepetido(rgba,rgba15);}
+                  if(maxpxcalcualdo>sum*15 &&maxpxcalcualdo<sum*16){colorepetido(rgba,rgba16);}
+                  if(maxpxcalcualdo>sum*16 &&maxpxcalcualdo<sum*17){colorepetido(rgba,rgba17);}
+                  
+
+               
+                }
+                
+            
+                return imageData;
+            }
+            
+            recalcularbrillo=(imageData,imageData2)=> {
+                alert("recalcular");
+                let data = imageData.data;
+                let data2 =imageData2.data; 
                 var rgba = {
                     r: 0,
                     g: 0,
@@ -590,15 +662,15 @@
 
                     let iniacil=(data2[i]/255.0) ;
 
-                   rgba= this.operacionMatematica(rgba,iniacil/(maxxcolor+0.000001),"*");
+                   rgba= this.operacionMatematica(rgba,iniacil/(maxxcolor+0.000001),"*") ;
 
-                    rgba= this.saturationGio(rgba,s);
+                    rgba= this.saturationGio(rgba,sat+iniacil*0.4 );
 
  
 
                     data[i] = rgba.r * 255;
-                    data[i + 1] = rgba.g * 255;
-                    data[i + 2] = rgba.b * 255;
+                    data[i + 1] = rgba.g* 255 ;
+                    data[i + 2] = rgba.b* 255 ;
                 }
                 return imageData;
             }
@@ -731,11 +803,16 @@ procesarImagengriscargada = async ( ) => {
                 this.downloadBtn.disabled = false;
                 this.copyBtn.disabled = false;
                 this.resetBtn.disabled = false;
+                setTimeout(() => {
 
-                let imagendata2 = this.gradientCanvas.getContext("2d").getImageData(0, 0, this.gradientCanvas.width, this.gradientCanvas.height);
+                    let uncanvas=document.getElementById("gradientCanvas");
+                    let imagendata2 =uncanvas.getContext("2d").getImageData(0, 0, this.gradientCanvas.width, this.gradientCanvas.height);
                 var canvascolorgris=this.crearGradienteGrises();
                 imagendata2 = this.recalcularbrillo(imagendata2,canvascolorgris.getContext("2d").getImageData(0, 0, canvascolorgris.width, canvascolorgris.height));
-                this.gradientCanvas.getContext("2d").putImageData(imagendata2,0,0);  
+           uncanvas.getContext("2d").putImageData(imagendata2,0,0);  
+                }, 1000);
+
+                 
             }
             
             analyzeColorRanges(pixels, sampleCount) {
