@@ -323,6 +323,10 @@
             margin: 0;
             font-size: 16px;
         }
+
+        body.drag-over {
+            background-color: #f0f8ff;
+        }
     </style>
 </head>
 <body>
@@ -414,36 +418,32 @@
                 this.downloadBtn.addEventListener('click', () => this.downloadGradient());
                 this.copyBtn.addEventListener('click', () => this.copyGLSLVectors());
                 this.resetBtn.addEventListener('click', () => this.resetProcess());
-                
-                // Drag and drop
-                this.dropZone.addEventListener('dragover', (e) => this.handleDragOver(e));
-                this.dropZone.addEventListener('dragleave', (e) => this.handleDragLeave(e));
-                this.dropZone.addEventListener('drop', (e) => this.handleDrop(e));
                 this.dropZone.addEventListener('click', () => this.imageInput.click());
                 
-                // Paste from clipboard
-                document.addEventListener('paste', (e) => this.handlePaste(e));
-                document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key === 'v') {
-                        e.preventDefault();
+                document.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    document.body.classList.add('drag-over');
+                });
+                
+                document.addEventListener('dragleave', (e) => {
+                    if (!e.relatedTarget || e.relatedTarget.nodeName === 'HTML') {
+                        document.body.classList.remove('drag-over');
                     }
+                });
+                
+                document.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    document.body.classList.remove('drag-over');
+                    this.handleDrop(e);
+                });
+                
+                window.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    this.handlePaste(e);
                 });
             }
 
-            handleDragOver(e) {
-                e.preventDefault();
-                this.dropZone.classList.add('drag-over');
-            }
-
-            handleDragLeave(e) {
-                e.preventDefault();
-                this.dropZone.classList.remove('drag-over');
-            }
-
             handleDrop(e) {
-                e.preventDefault();
-                this.dropZone.classList.remove('drag-over');
-                
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
                     const file = files[0];
@@ -454,7 +454,7 @@
             }
 
             handlePaste(e) {
-                const items = e.clipboardData.items;
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
                 for (let i = 0; i < items.length; i++) {
                     const item = items[i];
                     if (item.type.startsWith('image/')) {
