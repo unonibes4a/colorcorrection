@@ -54,11 +54,18 @@
             border: var(--border);
             transition: var(--transition);
             text-align: center;
+            position: relative;
         }
         
         .upload-section:hover {
             border-color: var(--light-gray);
             background: var(--white);
+        }
+        
+        .upload-section.drag-over {
+            border-color: var(--medium-gray);
+            background: #f0f8ff;
+            transform: scale(1.02);
         }
         
         .file-input {
@@ -294,6 +301,28 @@
             align-items: center;
             align-content: center;
         }
+
+        .drop-zone {
+            border: 2px dashed var(--light-gray);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: var(--medium-gray);
+            background: var(--lightest-gray);
+            transition: var(--transition);
+            margin-bottom: 20px;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--medium-gray);
+            background: #f0f8ff;
+            color: var(--dark-gray);
+        }
+
+        .drop-zone p {
+            margin: 0;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +332,9 @@
         <p class="flxc">Take the image of your favorite movie or game scene and match its render with that scene. Generate an image to correct the color of renders, be it Godot, Unreal Engine or Unity, or any  engine.</p>
         
         <div class="upload-section">
+            <div class="drop-zone" id="dropZone">
+                <p>Drop an image here, paste from clipboard (Ctrl+V), or click to select</p>
+            </div>
             <div class="samples-section">
                 <label for="imageInput" class="inputsimple">Open Image</label> 
                 <input type="file" id="imageInput" class="file-input" style="display: none;" accept="image/*">
@@ -369,6 +401,7 @@
                 this.copyBtn = document.getElementById('copyBtn');
                 this.resetBtn = document.getElementById('resetBtn');
                 this.processing = document.getElementById('processing');
+                this.dropZone = document.getElementById('dropZone');
                 this.arraymulti=[];
                 this.gradientColors = [];
                 this.setupEventListeners();
@@ -381,6 +414,73 @@
                 this.downloadBtn.addEventListener('click', () => this.downloadGradient());
                 this.copyBtn.addEventListener('click', () => this.copyGLSLVectors());
                 this.resetBtn.addEventListener('click', () => this.resetProcess());
+                
+                // Drag and drop
+                this.dropZone.addEventListener('dragover', (e) => this.handleDragOver(e));
+                this.dropZone.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                this.dropZone.addEventListener('drop', (e) => this.handleDrop(e));
+                this.dropZone.addEventListener('click', () => this.imageInput.click());
+                
+                // Paste from clipboard
+                document.addEventListener('paste', (e) => this.handlePaste(e));
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'v') {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                this.dropZone.classList.add('drag-over');
+            }
+
+            handleDragLeave(e) {
+                e.preventDefault();
+                this.dropZone.classList.remove('drag-over');
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                this.dropZone.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        this.processImageFile(file);
+                    }
+                }
+            }
+
+            handlePaste(e) {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.type.startsWith('image/')) {
+                        const file = item.getAsFile();
+                        if (file) {
+                            this.processImageFile(file);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            processImageFile(file) {
+                this.showProcessing(true);
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.currentImage = img;
+                        this.displayOriginalImage(img);
+                        this.processImage(img);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             }
             
             resetProcess() {
@@ -400,19 +500,7 @@
                 const file = event.target.files[0];
                 if (!file) return;
                 
-                this.showProcessing(true);
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        this.currentImage = img;
-                        this.displayOriginalImage(img);
-                        this.processImage(img);
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+                this.processImageFile(file);
             }
             
             displayOriginalImage(img) {
